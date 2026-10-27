@@ -1,0 +1,68 @@
+{
+  "name": "sshultra",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
+  "description": "A focused SSH workspace for everyday operations",
+  "author": "SSHUltra contributors",
+  "license": "MIT",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "dev": "npm run build && electron .",
+    "build": "node scripts/third-party-notices.cjs && tsc --noEmit && vite build",
+    "start": "electron .",
+    "test": "node --test --test-reporter=tap tests/*.test.cjs",
+    "test:ui": "node tests/ui-smoke.cjs",
+    "test:reliability-ui": "node tests/reliability-ui.cjs",
+    "package:mac": "npm run build && electron-builder --mac dir --arm64"
+  },
+  "build": {
+    "appId": "io.github.yihuirui.sshultra",
+    "electronDist": "node_modules/electron/dist",
+    "npmRebuild": false,
+    "extraResources": [
+      { "from": "LICENSE", "to": "SSHUltra-LICENSE.txt" },
+      { "from": "THIRD_PARTY_NOTICES.txt", "to": "THIRD_PARTY_NOTICES.txt" },
+      { "from": "node_modules/electron/LICENSE", "to": "Electron-LICENSE.txt" },
+      { "from": "node_modules/electron/dist/LICENSES.chromium.html", "to": "LICENSES.chromium.html" }
+    ],
+    "productName": "SSHUltra",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "desktop/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/ssh2/lib/protocol/crypto/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "assets/icon.icns",
+      "identity": null,
+      "target": [
+        "dir"
+      ]
+    }
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/addon-search": "0.16.0",
+    "@xterm/xterm": "6.0.0",
+    "lucide-react": "1.61.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "ssh2": "1.17.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "electron": "45.0.0",
+    "electron-builder": "26.18.0",
+    "playwright": "1.64.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.5"
+  }
+}

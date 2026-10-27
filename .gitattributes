@@ -1,0 +1,2 @@
+# Preserve upstream license text; CRLF in a vendor notice is not trailing whitespace.
+THIRD_PARTY_NOTICES.txt whitespace=cr-at-eol

@@ -1,0 +1,24 @@
+node_modules/
+dist/
+release/
+test-results/
+.codex-adaptive-agents/
+*.log
+.DS_Store
+.env*
+*.pem
+*.key
+# Machine-specific review evidence stays local.
+docs/REVIEW-*.md
+docs/review-*.md
+docs/release-frontend-*.md
+docs/release-backend-*.md
+docs/VERIFICATION.md
+.release-staging/
+data/
+workspace.json
+# Generated artwork variants; the checked-in ICNS and Swift source are sufficient.
+assets/icon.png
+assets/icon.iconset/
+# Compatibility launcher for the old local prototype only.
+启动HarborSSH.command
