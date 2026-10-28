@@ -1,12 +1,16 @@
-export type Profile = { id: string; name: string; group: string; host: string; port: number; username: string; authType: 'password' | 'key' | 'agent'; keyPath: string; color: string };
-export type Credentials = { password?: string; passphrase?: string };
+export type Profile = { id: string; revision: number; name: string; group: string; host: string; port: number; username: string; authType: 'password' | 'key' | 'agent' | 'interactive'; keyPath: string; color: string; jumpProfileId: string; credentialId: string; logEnabled: boolean; logRetentionDays: number };
+export type Credentials = { password?: string; passphrase?: string; jump?: { password?: string; passphrase?: string } };
+export type SavedCommand = { id: string; name: string; folder: string; body: string };
+export type SavedCredential = { id: string; name: string };
+export type AuthRequest = { type: 'auth'; token: string; id: string; host: string; name: string; instructions: string; presentation?: 'terminal' | 'dialog'; username?: string; port?: number; prompts: { prompt: string; echo: boolean }[] };
+export type ImportPreview = { token: string; count: number; names: string[]; missingUsernames: number; warnings: string[]; sheets?: string[]; sheet?: string; format?: string; rows?: { name: string; group: string; host: string; port: number; username: string }[] };
 export type SessionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
-export type Session = { id: string; profile: Profile; status: SessionStatus; message?: string; connectAttempt: number };
+export type Session = { id: string; profile: Profile; status: SessionStatus; message?: string; connectAttempt: number; logging?: boolean };
 export type Entry = { name: string; directory: boolean; symlink: boolean; size: number; modified: number; mode: number };
 export type Transfer = { type: 'transfer'; id: string; transferId: string; direction: string; name: string; bytes: number; status: string; message?: string };
-export type HarborEvent = { type: 'status'; id: string; status: SessionStatus; message?: string } | { type: 'data'; id: string; data: string; bytes: number } | { type: 'profiles'; profiles: Profile[] } | Transfer;
+export type HarborEvent = { type: 'status'; id: string; status: SessionStatus; message?: string } | { type: 'data'; id: string; data: string; bytes: number } | { type: 'profiles'; profiles: Profile[] } | Transfer | AuthRequest | { type: 'auth-expired'; token: string } | { type: 'logging'; id: string; enabled: boolean; message?: string } | { type: 'workflows'; commands: SavedCommand[]; credentials: SavedCredential[] };
 export interface API {
-  init(): Promise<{ profiles: Profile[]; version: string; platform: string }>;
+  init(): Promise<{ profiles: Profile[]; commands: SavedCommand[]; credentials: SavedCredential[]; credentialAvailable: boolean; vaultWarning?: string | null; version: string; platform: string }>;
   saveProfile(profile: Partial<Profile>): Promise<Profile>;
   deleteProfile(id: string): Promise<boolean>;
   pickKey(): Promise<string | null>;
@@ -16,10 +20,24 @@ export interface API {
   resize(id: string, cols: number, rows: number): Promise<void>;
   ack(id: string, bytes: number): Promise<void>;
   batch(ids: string[], command: string): Promise<{ canceled: boolean; results: { id: string; sent: boolean; message?: string }[] }>;
+  cancelFiles(id: string): Promise<number>;
   list(id: string, directory: string): Promise<{ path: string; entries: Entry[] }>;
   upload(id: string, directory: string): Promise<{ bytes: number } | null>;
   download(id: string, remote: string): Promise<{ bytes: number } | null>;
   exportScrollback(content: string): Promise<boolean>;
+  saveCommand(command: Partial<SavedCommand>): Promise<SavedCommand>;
+  deleteCommand(id: string): Promise<boolean>;
+  saveCredential(credential: { id?: string; name: string; password?: string; passphrase?: string }): Promise<SavedCredential | null>;
+  deleteCredential(id: string): Promise<boolean>;
+  answerAuth(token: string, answers: string[] | null): Promise<boolean>;
+  setLogging(id: string, enabled: boolean): Promise<boolean>;
+  openLogs(): Promise<boolean>;
+  bulkProfiles(ids: string[], patch: Partial<Profile>): Promise<boolean>;
+  exportProfiles(ids: string[], includeUsername: boolean, includeKeyPath: boolean): Promise<boolean>;
+  readImport(): Promise<ImportPreview | null>;
+  selectImportSheet(token: string, sheet: string): Promise<ImportPreview>;
+  saveImportTemplate(format: string): Promise<boolean>;
+  applyImport(token: string, username: string): Promise<boolean>;
   newWindow(): Promise<boolean>;
   onEvent(listener: (event: HarborEvent) => void): () => void;
 }

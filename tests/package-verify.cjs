@@ -20,7 +20,7 @@ const { spawn } = require('node:child_process');
     await first.getByRole('button', { name: '新建连接' }).waitFor();
     const meta = await primary.evaluate(({ app }) => ({ name: app.getName(), version: app.getVersion(), userData: app.getPath('userData') }));
     assert.equal(meta.name, 'SSHUltra');
-    assert.equal(meta.version, '0.1.1');
+    assert.equal(meta.version, require('../package.json').version);
     assert.equal(meta.userData, env.HARBOR_DATA_DIR);
     const profile = await first.evaluate(() => window.harbor.saveProfile({ name: 'Package test', host: 'example.test', username: 'test' }));
     const focusEvents = await primary.evaluate(({ app }) => {

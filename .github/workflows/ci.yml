@@ -17,6 +17,19 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - run: node node_modules/electron/install.js
       - run: npm test
+      - run: npm run test:ui
+      - run: npm run test:reliability-ui
+      - run: npm run test:workflows-ui
+      - run: npm run test:fixes-ui
+      - run: npm run test:password-ui
+      - run: npm run test:imports-ui
+      - run: npm run package:mac
+      - name: Check packaged application
+        run: |
+          export HARBOR_PACKAGED_APP=$(node -p "require('node:path').resolve('release', require('./package.json').version, process.arch === 'arm64' ? 'mac-arm64' : 'mac', 'SSHUltra.app/Contents/MacOS/SSHUltra')")
+          node tests/package-verify.cjs
+          node tests/imports-ui.cjs
       - name: Check generated notices
         run: git diff --exit-code -- THIRD_PARTY_NOTICES.txt

@@ -20,5 +20,6 @@ workspace.json
 # Generated artwork variants; the checked-in ICNS and Swift source are sufficient.
 assets/icon.png
 assets/icon.iconset/
+templates/*.inspect.ndjson
 # Compatibility launcher for the old local prototype only.
 启动HarborSSH.command

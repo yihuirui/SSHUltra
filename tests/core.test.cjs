@@ -46,7 +46,7 @@ test('real SSH shell, UTF-8, resizing, and selected-target batch delivery', { ti
   assert.throws(() => manager.batch(['one', 'one'], 'echo duplicate'));
   assert.throws(() => manager.batch(['one'], '\x1b[31m'));
   await new Promise(r => setTimeout(r, 50)); assert.equal(fixture.inputs.length, before);
-  const sent = manager.batch(['one', 'two'], 'printf "BATCH_SELECTED_OK\\n"');
+  const sent = await manager.batch(['one', 'two'], 'printf "BATCH_SELECTED_OK\\n"');
   assert.deepEqual(sent.map(r => r.sent), [true, true]);
   await waitFor(() => fixture.inputs.filter(x => x.includes('BATCH_SELECTED_OK')).length === 2);
   assert.ok(!events.filter(e => e.type === 'data' && e.id === 'three').map(e => Buffer.from(e.data, 'base64').toString()).join('').includes('BATCH_SELECTED_OK'));

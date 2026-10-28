@@ -5,27 +5,48 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 const { EventEmitter } = require('node:events');
+const net = require('node:net');
 const { STATUS_CODE, flagsToString } = utils.sftp;
 
 // SSH2 supports OpenSSH keys; RSA PEM keeps the fixture portable across library releases.
 const rsaKey = () => generateKeyPairSync('rsa', { modulusLength: 2048, privateKeyEncoding: { type: 'pkcs1', format: 'pem' }, publicKeyEncoding: { type: 'pkcs1', format: 'pem' } }).privateKey;
-async function createFixture({ port = 0, hostKey = rsaKey(), clientKey, respondToShell = true } = {}) {
+async function createFixture({ port = 0, hostKey = rsaKey(), clientKey, respondToShell = true, keyboard = false, allowForward = false, stallSftp = null } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'harbor-fixture-'));
   fs.mkdirSync(path.join(root, 'logs'));
   fs.writeFileSync(path.join(root, 'welcome.txt'), 'HarborSSH SFTP fixture\n中文文件传输验证\n');
   const clients = new Set(); const children = new Set(); const events = new EventEmitter();
   const inputs = []; const sizes = [];
-  let writeDelay = 0;
+  let writeDelay = 0; let sftpStall = stallSftp;
   const timers = new Set();
   const publicKey = clientKey ? utils.parseKey(clientKey) : null;
   const password = randomUUID();
   const server = new Server({ hostKeys: [hostKey] }, client => {
     clients.add(client); client.on('error', () => {}); client.on('close', () => clients.delete(client));
     client.on('authentication', ctx => {
+      events.emit('authentication', ctx.method);
       const validUser = ctx.username === 'ops';
-      if (validUser && ctx.method === 'password' && ctx.password === password) return ctx.accept();
+      if (validUser && keyboard && ctx.method === 'keyboard-interactive') {
+        ctx.prompt([{ prompt: 'Password: ', echo: false }, { prompt: 'Verification code: ', echo: false }], answers => {
+          if (answers[0] !== password || answers[1] !== '123456') return ctx.reject(['keyboard-interactive']);
+          ctx.prompt([{ prompt: 'Second verification: ', echo: false }], next => next[0] === '654321' ? ctx.accept() : ctx.reject(['keyboard-interactive']));
+        }); return;
+      }
+      if (validUser && !keyboard && ctx.method === 'password' && ctx.password === password) return ctx.accept();
       if (validUser && ctx.method === 'publickey' && publicKey && publicKey.getPublicSSH().equals(ctx.key.data) && (!ctx.signature || publicKey.verify(ctx.blob, ctx.signature, ctx.hashAlgo))) return ctx.accept();
-      ctx.reject(['password', 'publickey']);
+      ctx.reject(keyboard ? ['keyboard-interactive'] : ['password', 'publickey']);
+    });
+    client.on('tcpip', (accept, reject, info) => {
+      if (!allowForward || info.destIP !== '127.0.0.1') return reject();
+      const socket = net.connect(info.destPort, '127.0.0.1');
+      children.add(socket);
+      socket.once('connect', () => {
+        const stream = accept(); if (!stream) { socket.destroy(); return; }
+        stream.on('error', () => socket.destroy());
+        stream.once('close', () => socket.destroy());
+        socket.pipe(stream).pipe(socket);
+      });
+      socket.on('error', () => { try { reject(); } catch {} });
+      socket.once('close', () => children.delete(socket));
     });
     client.on('ready', () => client.on('session', accept => {
       const session = accept();
@@ -50,6 +71,7 @@ async function createFixture({ port = 0, hostKey = rsaKey(), clientKey, respondT
         channel.on('close', () => child.kill());
       });
       session.on('sftp', accept => {
+        if (sftpStall === 'INIT') return;
         const ftp = accept(); const handles = new Map(); let nextHandle = 0;
         const safe = remote => {
           const full = path.resolve(root, '.' + path.posix.resolve('/', remote));
@@ -61,6 +83,7 @@ async function createFixture({ port = 0, hostKey = rsaKey(), clientKey, respondT
         const addHandle = data => { const h = Buffer.alloc(4); h.writeUInt32BE(++nextHandle); handles.set(h.toString('hex'), data); return h; };
         const getHandle = h => { const found = handles.get(h.toString('hex')); if (!found) throw new Error('Invalid handle'); return found; };
         const respond = (event, fn) => ftp.on(event, (id, ...args) => {
+          if (sftpStall === event) return;
           try { fn(id, ...args); } catch (error) { ftp.status(id, error.code === 'ENOENT' ? STATUS_CODE.NO_SUCH_FILE : error.code === 'EACCES' ? STATUS_CODE.PERMISSION_DENIED : STATUS_CODE.FAILURE, error.message); }
         });
         respond('REALPATH', (id, remote) => { const local = safe(remote); fs.statSync(local); ftp.name(id, [entry('/' + path.relative(root, local).split(path.sep).join('/'), fs.statSync(local))]); });
@@ -82,11 +105,11 @@ async function createFixture({ port = 0, hostKey = rsaKey(), clientKey, respondT
     }));
   });
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve); });
-  return { root, password, port: server.address().port, inputs, sizes, events, hostKey, setWriteDelay(ms) { writeDelay = ms; },
+  return { root, password, port: server.address().port, inputs, sizes, events, hostKey, setWriteDelay(ms) { writeDelay = ms; }, setSftpStall(value) { sftpStall = value; },
     async close() {
       for (const timer of timers) clearTimeout(timer);
       for (const client of clients) client.end();
-      const exits = [...children].map(child => new Promise(resolve => { child.once('close', resolve); child.kill(); }));
+      const exits = [...children].map(child => new Promise(resolve => { child.once('close', resolve); if (child.kill) child.kill(); else child.destroy(); }));
       await Promise.all(exits);
       await new Promise(resolve => server.close(resolve));
       fs.rmSync(root, { recursive: true, force: true });

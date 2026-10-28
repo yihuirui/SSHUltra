@@ -88,11 +88,11 @@ test('pre-connect credential and key path failures release IDs for a corrected r
     fs.rmSync(directory, { recursive: true, force: true });
   });
 
-  await assert.rejects(manager.connect('missing-password', profile(fixture), {}), /请输入密码/);
-  assert.equal(manager.sessions.has('missing-password'), false);
-  await manager.connect('missing-password', profile(fixture), { password: fixture.password });
-  manager.disconnect('missing-password');
-  await waitFor(() => !manager.sessions.has('missing-password'));
+  await assert.rejects(manager.connect('invalid-password', profile(fixture), { password: 42 }), /密码格式无效/);
+  assert.equal(manager.sessions.has('invalid-password'), false);
+  await manager.connect('invalid-password', profile(fixture), { password: fixture.password });
+  manager.disconnect('invalid-password');
+  await waitFor(() => !manager.sessions.has('invalid-password'));
 
   const invalidKey = { ...profile(fixture), authType: 'key', keyPath: path.join(directory, 'missing-key') };
   await assert.rejects(manager.connect('invalid-key', invalidKey, {}), /ENOENT|no such file/i);

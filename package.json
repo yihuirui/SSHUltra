@@ -1,6 +1,6 @@
 {
   "name": "sshultra",
-  "version": "0.1.1",
+  "version": "0.2.3",
   "private": true,
   "type": "module",
   "description": "A focused SSH workspace for everyday operations",
@@ -14,17 +14,35 @@
     "test": "node --test --test-reporter=tap tests/*.test.cjs",
     "test:ui": "node tests/ui-smoke.cjs",
     "test:reliability-ui": "node tests/reliability-ui.cjs",
-    "package:mac": "npm run build && electron-builder --mac dir --arm64"
+    "package:mac": "npm run build && node scripts/package-mac.cjs",
+    "test:workflows-ui": "node tests/workflows-ui.cjs",
+    "package:mac:x64": "npm run build && node scripts/package-mac.cjs --arch=x64",
+    "package:mac:arm64": "npm run build && node scripts/package-mac.cjs --arch=arm64",
+    "test:fixes-ui": "node tests/review-fixes-ui.cjs",
+    "test:password-ui": "node tests/password-ui.cjs",
+    "test:imports-ui": "node tests/imports-ui.cjs"
   },
   "build": {
     "appId": "io.github.yihuirui.sshultra",
     "electronDist": "node_modules/electron/dist",
     "npmRebuild": false,
     "extraResources": [
-      { "from": "LICENSE", "to": "SSHUltra-LICENSE.txt" },
-      { "from": "THIRD_PARTY_NOTICES.txt", "to": "THIRD_PARTY_NOTICES.txt" },
-      { "from": "node_modules/electron/LICENSE", "to": "Electron-LICENSE.txt" },
-      { "from": "node_modules/electron/dist/LICENSES.chromium.html", "to": "LICENSES.chromium.html" }
+      {
+        "from": "LICENSE",
+        "to": "SSHUltra-LICENSE.txt"
+      },
+      {
+        "from": "THIRD_PARTY_NOTICES.txt",
+        "to": "THIRD_PARTY_NOTICES.txt"
+      },
+      {
+        "from": "node_modules/electron/LICENSE",
+        "to": "Electron-LICENSE.txt"
+      },
+      {
+        "from": "node_modules/electron/dist/LICENSES.chromium.html",
+        "to": "LICENSES.chromium.html"
+      }
     ],
     "productName": "SSHUltra",
     "directories": {
@@ -33,7 +51,11 @@
     "files": [
       "dist/**/*",
       "desktop/**/*",
-      "package.json"
+      "package.json",
+      "templates/*.xlsx",
+      "templates/*.csv",
+      "templates/*.txt",
+      "templates/*.md"
     ],
     "asarUnpack": [
       "node_modules/ssh2/lib/protocol/crypto/**/*"
@@ -54,7 +76,9 @@
     "lucide-react": "1.61.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "ssh2": "1.17.0"
+    "ssh2": "1.17.0",
+    "xlsx": "file:vendor/xlsx-0.20.3.tgz",
+    "yauzl": "3.4.0"
   },
   "devDependencies": {
     "@types/react": "19.3.0",
