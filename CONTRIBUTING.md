@@ -21,4 +21,6 @@ By submitting a contribution, you agree that your original contribution is avail
 
 Pushes to `main`, pull requests and manual `workflow_dispatch` runs execute `.github/workflows/ci.yml` on macOS with `contents: read`: build, the full test set, macOS packaging, packaged-app verification and a `THIRD_PARTY_NOTICES.txt` consistency check. Runs are grouped per ref with `concurrency`, so a newer push cancels an in-progress run for the same branch instead of queuing several 15-minute macOS jobs.
 
+The job uses the `macos-15` (arm64) runner label. The previous `macos-14` label is no longer schedulable for this account: GitHub cancels those runs immediately with `The configuration 'macos-14-arm64-us-default' is not supported`, before any step executes. A cancelled run with zero steps therefore indicates a runner-label problem, not a failing test — check the run annotations before investigating the test suite. Other repositories in this account use `macos-15` and `macos-15-intel` successfully.
+
 The workflow installs the Electron runtime explicitly with `node node_modules/electron/install.js` before running tests. If you install dependencies with `npm ci --ignore-scripts`, the architecture-verification test will fail with a missing `Electron.app`; that is an incomplete local runtime, not a source defect.

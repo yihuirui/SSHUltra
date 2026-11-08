@@ -13,7 +13,11 @@ concurrency:
   cancel-in-progress: true
 jobs:
   core:
-    runs-on: macos-14
+    # The macOS 14 hosted image is no longer schedulable for this account:
+    # runs on that label are cancelled before any step starts with
+    # "The configuration 'macos-14-arm64-us-default' is not supported".
+    # macOS 15 keeps the same arm64 architecture used by the previous image.
+    runs-on: macos-15
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
