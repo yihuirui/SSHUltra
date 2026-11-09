@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage question or setup help
+    url: https://github.com/yihuirui/SSHUltra/blob/main/SUPPORT.md
+    about: Read the support guide first; include version, macOS and architecture, and redact all session output.
+  - name: Report a security issue privately
+    url: https://github.com/yihuirui/SSHUltra/security/advisories/new
+    about: Never disclose vulnerabilities in a public issue. See SECURITY.md.
+  - name: Community conduct concern
+    url: https://github.com/yihuirui/SSHUltra/blob/main/CODE_OF_CONDUCT.md
+    about: Reporting and enforcement process for unacceptable behavior.

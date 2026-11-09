@@ -66,7 +66,7 @@ The default package targets the current Node host architecture and is built into
 
 Electron's main process owns SSH/SFTP and local files. A sandboxed React/TypeScript renderer uses xterm.js through a narrow preload API. Node.js is unavailable to the renderer. Each window has its own SSH manager; one main process owns the saved workspace.
 
-See [Architecture](docs/ARCHITECTURE.md), [Security](SECURITY.md), [Contributing](CONTRIBUTING.md), and [Changelog](CHANGELOG.md).
+See [Architecture](docs/ARCHITECTURE.md), [Security](SECURITY.md), [Contributing](CONTRIBUTING.md), [Support](SUPPORT.md), [Code of conduct](CODE_OF_CONDUCT.md), and [Changelog](CHANGELOG.md).
 
 ## Local data / 本地数据
 

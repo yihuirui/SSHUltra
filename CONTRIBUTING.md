@@ -24,3 +24,15 @@ Pushes to `main`, pull requests and manual `workflow_dispatch` runs execute `.gi
 The job uses the `macos-15` (arm64) runner label. The previous `macos-14` label is no longer schedulable for this account: GitHub cancels those runs immediately with `The configuration 'macos-14-arm64-us-default' is not supported`, before any step executes. A cancelled run with zero steps therefore indicates a runner-label problem, not a failing test — check the run annotations before investigating the test suite. Other repositories in this account use `macos-15` and `macos-15-intel` successfully.
 
 The workflow installs the Electron runtime explicitly with `node node_modules/electron/install.js` before running tests. If you install dependencies with `npm ci --ignore-scripts`, the architecture-verification test will fail with a missing `Electron.app`; that is an incomplete local runtime, not a source defect.
+
+## Maintenance expectations
+
+SSHUltra is maintained in spare time with limited weekly hours. That is a statement of capacity, not a promise of availability: there is no response SLA, and a polite comment on the same thread after seven days is appropriate.
+
+Refusing a patch is a reversible decision; accepting one means maintaining its security and packaging implications for a long time. Changes that weaken host-key verification, renderer isolation or explicit batch-send confirmation, or that broaden credential storage, will be declined even if they are technically correct. Out-of-scope pull requests are closed promptly with a short explanation and a link back to this document rather than left open indefinitely.
+
+Security concerns are not negotiated in public threads. See [SECURITY.md](SECURITY.md); community interactions follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
+## Where to get help
+
+Usage and setup questions belong in [SUPPORT.md](SUPPORT.md), not in pull request review threads. Use the issue forms in `.github/ISSUE_TEMPLATE/` and the pull request checklist in `.github/PULL_REQUEST_TEMPLATE.md` so the required version, platform and redaction information is present from the start.

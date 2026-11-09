@@ -4,7 +4,9 @@ SSHUltra 0.2.x is a preview. Security fixes target the most recent preview; olde
 
 ## Reporting
 
-Do not post passwords, keys, access tokens, host inventories or terminal output in public issues. Use GitHub private vulnerability reporting if it is enabled in this repository's Security tab. If no private reporting channel is available, open a minimal issue requesting a private contact route without including exploit details or sensitive information.
+Do not post passwords, keys, access tokens, host inventories or terminal output in public issues. Report suspected vulnerabilities privately at <https://github.com/yihuirui/SSHUltra/security/advisories/new> (GitHub private vulnerability reporting is enabled for this repository). Put the reproduction details in that private report, not in a public issue. If the private channel is ever unavailable, open a minimal issue requesting a private contact route without including exploit details or sensitive information.
+
+Preview releases are maintained on the newest 0.2.x build only. A report should state the affected version or commit, macOS version, architecture, and the smallest reliable reproduction; please redact hostnames, usernames and any session output. Community conduct concerns are handled separately under [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## Current safeguards
 
